@@ -63,60 +63,6 @@ char **_expand_vars(info_t *info, char ***tokptr)
 				++pos;
 			continue;
 		}
-		if (state & (QUOTE_ESCAPE))
-		{
-			if (!tok[++pos] || !tok[++pos])
-				break;
-			state = quote_state(tok[pos]);
-			if (state & (QUOTE_DOUBLE | QUOTE_SINGLE | QUOTE_ESCAPE))
-				++pos;
-			continue;
-		}
-		if (tok[pos] != '$')
-		{
-			++pos;
-			continue;
-		}
-		if (tok[pos + 1] == '$')
-		{
-			val = num_to_str(info->pid);
-		}
-		else if (tok[pos + 1] == '?')
-		{
-			val = num_to_str(info->status);
-		}
-		else if (_isident(tok[pos + 1]) && !_isdigit(tok[pos + 1]))
-		{
-			while (_isident(tok[pos + var_len + 1]))
-				++var_len;
-
-			var = _strndup(tok + pos + 1, var_len);
-			val = get_dict_val(info->env, var);
-
-			if (val)
-				val = _strdup(val);
-			else
-				val = _strdup("");
-
-			free(var);
-			var = NULL;
-		}
-		if (val)
-		{
-			val_len = _strlen(val);
-			**tokptr = malloc(sizeof(char) * (
-					pos + val_len + _strlen(tok + pos + var_len) + 1
-					));
-			_memcpy(**tokptr, tok, pos);
-			_memcpy(**tokptr + pos, val, val_len);
-			_strcpy(**tokptr + pos + val_len, tok + pos + var_len + 1);
-
-			free(tok);
-			tok = **tokptr;
-
-			free(val);
-			val = NULL;
-		}
 		pos += val_len;
 	}
 	return (tokenize(**tokptr));
